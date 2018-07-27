@@ -1,7 +1,7 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseReturnsEffect
 // !DIAGNOSTICS: -INVISIBLE_REFERENCE -INVISIBLE_MEMBER
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 class Foo(val x: Int?) {
     fun isXNull(): Boolean {

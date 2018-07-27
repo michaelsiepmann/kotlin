@@ -1,7 +1,7 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseCallsInPlaceEffect
 // !DIAGNOSTICS: -INVISIBLE_REFERENCE -INVISIBLE_MEMBER
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 inline fun myRun(block: () -> Unit): Unit {
     contract {

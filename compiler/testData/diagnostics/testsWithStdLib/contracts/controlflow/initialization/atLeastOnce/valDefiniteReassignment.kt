@@ -1,7 +1,7 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseCallsInPlaceEffect
 // !DIAGNOSTICS: -INVISIBLE_REFERENCE -INVISIBLE_MEMBER
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 fun <T> runTwice(block: () -> T): T {
     contract {

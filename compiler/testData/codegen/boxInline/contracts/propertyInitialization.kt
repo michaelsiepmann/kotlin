@@ -3,7 +3,7 @@
 // FILE: 1.kt
 package test
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public inline fun <R> myrun(block: () -> R): R {

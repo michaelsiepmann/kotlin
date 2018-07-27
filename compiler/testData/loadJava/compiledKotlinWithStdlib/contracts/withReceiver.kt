@@ -3,7 +3,7 @@
 
 package test
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 fun Any?.isNotNull(): Boolean {
     contract {

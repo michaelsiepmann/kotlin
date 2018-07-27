@@ -3,7 +3,7 @@
 
 package test
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 fun <X, Y, Z, R> callsEffectWithKind(block: (X, Y, Z) -> R) {
     contract {

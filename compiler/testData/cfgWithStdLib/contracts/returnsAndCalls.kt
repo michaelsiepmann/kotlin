@@ -1,6 +1,6 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseCallsInPlaceEffect +UseReturnsEffect
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 fun callsAndInverts(b: Boolean, block: () -> Unit): Boolean {
     contract {

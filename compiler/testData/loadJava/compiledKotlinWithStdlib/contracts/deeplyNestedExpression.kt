@@ -3,7 +3,7 @@
 
 package test
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 class A
 

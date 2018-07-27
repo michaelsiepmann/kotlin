@@ -3,7 +3,7 @@
 
 package test
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 public inline fun <R> run(block: () -> R): R {
     contract {

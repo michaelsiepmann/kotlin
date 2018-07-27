@@ -1,6 +1,6 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseCallsInPlaceEffect
 
-import kotlin.internal.contracts.*
+import kotlin.contracts.*
 
 inline fun <T, R> T.myLet(block: (T) -> R): R {
     contract {
