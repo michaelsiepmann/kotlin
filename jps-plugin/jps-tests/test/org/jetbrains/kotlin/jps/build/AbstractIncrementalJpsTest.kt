@@ -43,13 +43,20 @@ import org.jetbrains.jps.model.JpsModuleRootModificationUtil
 import org.jetbrains.jps.model.java.JpsJavaDependencyScope
 import org.jetbrains.jps.model.java.JpsJavaExtensionService
 import org.jetbrains.jps.util.JpsPathUtil
+import org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
+import org.jetbrains.kotlin.cli.common.arguments.K2MetadataCompilerArguments
+import org.jetbrains.kotlin.config.CompilerSettings
 import org.jetbrains.kotlin.config.IncrementalCompilation
+import org.jetbrains.kotlin.config.KotlinFacetSettings
 import org.jetbrains.kotlin.incremental.CacheVersion
 import org.jetbrains.kotlin.incremental.LookupSymbol
 import org.jetbrains.kotlin.incremental.isJavaFile
 import org.jetbrains.kotlin.incremental.testingUtils.*
 import org.jetbrains.kotlin.jps.incremental.getKotlinCache
 import org.jetbrains.kotlin.jps.incremental.withLookupStorage
+import org.jetbrains.kotlin.jps.model.JpsKotlinFacetModuleExtension
+import org.jetbrains.kotlin.jps.model.kotlinFacet
 import org.jetbrains.kotlin.jps.platforms.kotlinBuildTargets
 import org.jetbrains.kotlin.test.KotlinTestUtils
 import org.jetbrains.kotlin.utils.Printer
@@ -253,6 +260,31 @@ abstract class AbstractIncrementalJpsTest(
         return result
     }
 
+    private fun readModulePlatforms(): Map<String, Platform> {
+        val platformsTxt = File(testDataDir, "platforms.txt")
+        if (!platformsTxt.exists()) return emptyMap()
+
+        return platformsTxt.readLines()
+            .map {
+                val (name, platformString) = it.split("=")
+                val platform = Platform.fromString(platformString) ?: error("Unknown platform '$platformString'")
+                name to platform
+            }
+            .toMap()
+    }
+
+    protected open val defaultPlatform: Platform
+        get() = Platform.JVM
+
+    protected enum class Platform {
+        JVM, JS, COMMON;
+
+        companion object {
+            fun fromString(str: String): Platform? =
+                Platform.values().firstOrNull { it.name.equals(str, ignoreCase = true) }
+        }
+    }
+
     protected open fun createBuildLog(incrementalMakeResults: List<AbstractIncrementalJpsTest.MakeResult>): String =
         buildString {
             incrementalMakeResults.forEachIndexed { i, makeResult ->
@@ -408,8 +440,7 @@ abstract class AbstractIncrementalJpsTest(
             addModule("module", arrayOf(getAbsolutePath("src")), null, null, jdk)
             prepareModuleSources(moduleName = null)
             moduleNames = null
-        }
-        else {
+        } else {
             val nameToModule = moduleDependencies.keys
                 .keysToMap { addModule(it, arrayOf(getAbsolutePath("$it/src")), null, null, jdk)!! }
 
@@ -417,8 +448,12 @@ abstract class AbstractIncrementalJpsTest(
                 val module = nameToModule[moduleName]!!
 
                 for (dependency in dependencies) {
-                    JpsModuleRootModificationUtil.addDependency(module, nameToModule[dependency.name],
-                                                                JpsJavaDependencyScope.COMPILE, dependency.exported)
+                    JpsModuleRootModificationUtil.addDependency(
+                        module,
+                        nameToModule[dependency.name],
+                        JpsJavaDependencyScope.COMPILE,
+                        dependency.exported
+                    )
                 }
             }
 
@@ -429,13 +464,55 @@ abstract class AbstractIncrementalJpsTest(
             moduleNames = nameToModule.keys
         }
 
-        configureDependencies()
+        val modulePlatforms = readModulePlatforms()
+        configureFacets(moduleDependencies ?: emptyMap(), modulePlatforms)
+        configureDependencies(modulePlatforms)
         return moduleNames
     }
 
-    protected open fun configureDependencies() {
-        AbstractKotlinJpsBuildTestCase.addKotlinStdlibDependency(myProject)
-        AbstractKotlinJpsBuildTestCase.addKotlinTestDependency(myProject)
+    private fun configureFacets(
+        moduleDependencies: Map<String, List<DependencyDescriptor>>,
+        modulePlatforms: Map<String, Platform>
+    ) {
+        if (modulePlatforms.isEmpty()) return
+
+        for (module in myProject.modules) {
+            val platform = modulePlatforms[module.name] ?: defaultPlatform
+
+            val kotlinFacetSettings = KotlinFacetSettings().apply {
+                useProjectSettings = false
+                compilerSettings = CompilerSettings().also { it.additionalArguments = "-Xmulti-platform" }
+                compilerArguments = when (platform) {
+                    Platform.JVM -> K2JVMCompilerArguments()
+                    Platform.JS -> K2JSCompilerArguments()
+                    Platform.COMMON -> K2MetadataCompilerArguments()
+                }
+                implementedModuleNames = (moduleDependencies[module.name] ?: emptyList())
+                    .filter { it.expectedBy }
+                    .map { it.name }
+            }
+
+            module.container.setChild(
+                JpsKotlinFacetModuleExtension.KIND,
+                JpsKotlinFacetModuleExtension(kotlinFacetSettings)
+            )
+        }
+    }
+
+    private fun configureDependencies(modulePlatforms: Map<String, Platform>) {
+        for (module in myProject.modules) {
+            val platform = modulePlatforms[module.name] ?: defaultPlatform
+            when (platform) {
+                Platform.JVM -> {
+                    AbstractKotlinJpsBuildTestCase.addKotlinStdlibDependency(listOf(module), false)
+                    AbstractKotlinJpsBuildTestCase.addKotlinTestDependency(listOf(module))
+                }
+                Platform.JS -> {
+                    AbstractKotlinJpsBuildTestCase.addKotlinJavaScriptStdlibDependency(listOf(module))
+                }
+                AbstractIncrementalJpsTest.Platform.COMMON -> {}
+            }
+        }
     }
 
     protected open fun preProcessSources(srcDir: File) {
@@ -547,9 +624,25 @@ private class MockJavaConstantSearch(private val workDir: File) : Callbacks.Cons
 internal val ProjectDescriptor.allModuleTargets: Collection<ModuleBuildTarget>
     get() = buildTargetIndex.allTargets.filterIsInstance<ModuleBuildTarget>()
 
-private class DependencyDescriptor(val name: String, val exported: Boolean)
+private class DependencyDescriptor(val name: String, val exported: Boolean, val expectedBy: Boolean)
 
-private fun parseDependency(dependency: String): DependencyDescriptor =
-    DependencyDescriptor(dependency.removeSuffix(EXPORTED_SUFFIX), dependency.endsWith(EXPORTED_SUFFIX))
+// todo: refactor parsing
+private fun parseDependency(dependency: String): DependencyDescriptor {
+    if (!"[A-Za-z0-9]+(\\[[A-Za-z0-9,]+\\])?".toRegex().matches(dependency)) {
+        error("Could not parse dependency '$dependency' (format 'moduleName[exported,expectedBy]')")
+    }
 
-private val EXPORTED_SUFFIX = "[exported]"
+    val split = dependency.split("[")
+    val name = split[0]
+    var exported = false
+    var expectedBy = false
+    val attributes = split.getOrNull(1)?.removeSuffix("]")?.split(",") ?: emptyList()
+    for (attr in attributes) {
+        when (attr) {
+            "exported" -> exported = true
+            "expectedBy" -> expectedBy = true
+            else -> error("Unknown dependency attribute '$attr'")
+        }
+    }
+    return DependencyDescriptor(name, exported = exported, expectedBy = expectedBy)
+}

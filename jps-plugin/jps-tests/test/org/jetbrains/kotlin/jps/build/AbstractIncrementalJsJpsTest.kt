@@ -24,9 +24,8 @@ abstract class AbstractIncrementalJsJpsTest : AbstractIncrementalJpsTest() {
         super.tearDown()
     }
 
-    override fun configureDependencies() {
-        AbstractKotlinJpsBuildTestCase.addKotlinJavaScriptStdlibDependency(myProject)
-    }
+    override val defaultPlatform: Platform
+        get() = Platform.JS
 
     override val buildLogFinder: BuildLogFinder
         get() = super.buildLogFinder.copy(isJsEnabled = true)

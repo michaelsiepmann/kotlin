@@ -208,6 +208,11 @@ public class IncrementalLazyCachesTestGenerated extends AbstractIncrementalLazyC
             runTest("jps-plugin/testData/incremental/changeIncrementalOption/incrementalOffOnJavaOnly/");
         }
 
+        @TestMetadata("mppJsIncrementalOff")
+        public void testMppJsIncrementalOff() throws Exception {
+            runTest("jps-plugin/testData/incremental/changeIncrementalOption/mppJsIncrementalOff/");
+        }
+
         @TestMetadata("jps-plugin/testData/incremental/changeIncrementalOption/incrementalOff")
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(JUnit3RunnerWithInners.class)
@@ -257,6 +262,19 @@ public class IncrementalLazyCachesTestGenerated extends AbstractIncrementalLazyC
 
             public void testAllFilesPresentInIncrementalOffOnJavaOnly() throws Exception {
                 KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("jps-plugin/testData/incremental/changeIncrementalOption/incrementalOffOnJavaOnly"), Pattern.compile("^([^\\.]+)$"), TargetBackend.ANY, true);
+            }
+        }
+
+        @TestMetadata("jps-plugin/testData/incremental/changeIncrementalOption/mppJsIncrementalOff")
+        @TestDataPath("$PROJECT_ROOT")
+        @RunWith(JUnit3RunnerWithInners.class)
+        public static class MppJsIncrementalOff extends AbstractIncrementalLazyCachesTest {
+            private void runTest(String testDataFilePath) throws Exception {
+                KotlinTestUtils.runTest(this::doTest, TargetBackend.ANY, testDataFilePath);
+            }
+
+            public void testAllFilesPresentInMppJsIncrementalOff() throws Exception {
+                KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("jps-plugin/testData/incremental/changeIncrementalOption/mppJsIncrementalOff"), Pattern.compile("^([^\\.]+)$"), TargetBackend.ANY, true);
             }
         }
     }

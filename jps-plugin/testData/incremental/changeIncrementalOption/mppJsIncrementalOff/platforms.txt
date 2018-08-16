@@ -1,0 +1,3 @@
+common1=common
+jvm1=jvm
+js1=js

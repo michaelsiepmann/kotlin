@@ -1,0 +1,59 @@
+================ Step #1 =================
+
+Building common1
+Exit code: NOTHING_DONE
+------------------------------------------
+Building js1
+Exit code: NOTHING_DONE
+------------------------------------------
+Building jvm1
+Exit code: NOTHING_DONE
+------------------------------------------
+
+================ Step #2 =================
+
+Building common1
+Exit code: NOTHING_DONE
+------------------------------------------
+Building js1
+Exit code: NOTHING_DONE
+------------------------------------------
+Building jvm1
+Cleaning output files:
+  out/production/jvm1/A.class
+  out/production/jvm1/META-INF/jvm1.kotlin_module
+End of files
+Compiling files:
+  common1/src/A.kt
+  jvm1/src/A.kt
+End of files
+Exit code: OK
+------------------------------------------
+
+================ Step #3 =================
+
+Building common1
+Exit code: CHUNK_REBUILD_REQUIRED
+------------------------------------------
+Exit code: OK
+------------------------------------------
+Building js1
+Cleaning output files:
+  out/production/js1/js1.js
+  out/production/js1/js1.meta.js
+  out/production/js1/js1/root-package.kjsm
+End of files
+Exit code: CHUNK_REBUILD_REQUIRED
+------------------------------------------
+Compiling files:
+  common1/src/A.kt
+  common1/src/B.kt
+  common1/src/dummy.kt
+  js1/src/A.kt
+  js1/src/B.kt
+End of files
+Exit code: OK
+------------------------------------------
+Building jvm1
+Exit code: NOTHING_DONE
+------------------------------------------

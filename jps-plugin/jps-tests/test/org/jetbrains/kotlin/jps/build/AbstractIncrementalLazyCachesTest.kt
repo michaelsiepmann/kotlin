@@ -69,6 +69,9 @@ abstract class AbstractIncrementalLazyCachesTest : AbstractIncrementalJpsTest() 
                 name.endsWith("incremental-compilation") -> {
                     IncrementalCompilation.setIsEnabledForJvm(modification.dataFile.readAsBool())
                 }
+                name.endsWith("incremental-compilation-js") -> {
+                    IncrementalCompilation.setIsEnabledForJs(modification.dataFile.readAsBool())
+                }
             }
         }
     }

@@ -75,16 +75,28 @@ public abstract class AbstractKotlinJpsBuildTestCase extends BaseKotlinJpsBuildT
         return addDependency("KotlinJavaScript", PathUtil.getKotlinPathsForDistDirectory().getJsStdLibJarPath());
     }
 
-    static JpsLibrary addKotlinJavaScriptStdlibDependency(@NotNull JpsProject project) {
-        return addDependency(project,"KotlinJavaScript", PathUtil.getKotlinPathsForDistDirectory().getJsStdLibJarPath());
+    static JpsLibrary addKotlinJavaScriptStdlibDependency(@NotNull Collection<JpsModule> modules) {
+        return addDependency(
+                JpsJavaDependencyScope.COMPILE,
+                modules,
+                false,
+                "KotlinJavaScript",
+                PathUtil.getKotlinPathsForDistDirectory().getJsStdLibJarPath()
+        );
     }
 
     static JpsLibrary addKotlinStdlibDependency(@NotNull JpsProject project) {
        return addKotlinStdlibDependency(project.getModules(), false);
     }
 
-    static JpsLibrary addKotlinTestDependency(@NotNull JpsProject project) {
-        return addDependency(project, "kotlin-test", PathUtil.getKotlinPathsForDistDirectory().getKotlinTestPath());
+    static JpsLibrary addKotlinTestDependency(@NotNull Collection<JpsModule> modules) {
+        return addDependency(
+                JpsJavaDependencyScope.COMPILE,
+                modules,
+                false,
+                "kotlin-test",
+                PathUtil.getKotlinPathsForDistDirectory().getKotlinTestPath()
+        );
     }
 
     protected static JpsLibrary addKotlinStdlibDependency(@NotNull Collection<JpsModule> modules, boolean exported) {
