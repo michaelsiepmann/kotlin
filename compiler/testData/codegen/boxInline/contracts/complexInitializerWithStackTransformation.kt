@@ -1,4 +1,5 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseCallsInPlaceEffect +ReadDeserializedContracts
+// !USE_EXPERIMENTAL: kotlin.internal.ContractsDsl
 // IGNORE_BACKEND: JVM_IR
 // FILE: 1.kt
 package test

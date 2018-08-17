@@ -1,4 +1,5 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +UseCallsInPlaceEffect +UseReturnsEffect
+// !USE_EXPERIMENTAL: kotlin.internal.ContractsDsl
 
 import kotlin.contracts.*
 

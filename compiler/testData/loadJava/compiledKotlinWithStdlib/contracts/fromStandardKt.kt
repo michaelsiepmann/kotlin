@@ -1,4 +1,5 @@
 // !LANGUAGE: +AllowContractsForCustomFunctions +ReadDeserializedContracts
+// !USE_EXPERIMENTAL: kotlin.internal.ContractsDsl
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package test
